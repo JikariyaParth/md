@@ -124,3 +124,321 @@ catch(Exception e){
 </body>
 </html>
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+DEMO CRUD OPERATIONS::
+DEMO INSERT, DELETE, UPDATE & DISPLAY ALL RECORDS & DISPLAY RECORD by ID::
+------------------------------
+Example using Java Servlet:
+A menu HTML page (index.html)
+Links to:
+	insert.html
+	delete.html
+	update.html       
+	display.jsp
+	displaybyid.html
+----------------------
+Database Setup (user: exam24)
+
+CREATE TABLE student(id INT PRIMARY KEY, name VARCHAR(20), city VARCHAR(20));
+
+FILE1. [index.html] HTML File for Menu Page
+==========================
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Student Management Menu</title>
+</head>
+<body>
+    <h1>Student Management Menu</h1>
+    <ul>
+        <li><a href="insert.html">Insert Student</a></li>
+        <li><a href="delete.html">Delete Student</a></li>
+        <li><a href="update.html">Update Student</a></li>
+        <li><a href="display.jsp">Display All Students</a></li>
+        <li><a href="displaybyid.html">Display Student by ID</a></li>
+    </ul>
+</body>
+</html>
+
+FILE2. [insert.html] HTML File
+===========================
+<!DOCTYPE html>
+<html>
+<head><title>Insert Student</title></head>
+<body>
+<h2>Insert Student</h2>
+<form action="InsertStudent" method="post">
+    ID: <input type="text" name="id"><br>
+    Name: <input type="text" name="name"><br>
+    City: <input type="text" name="city"><br>
+    <input type="submit" value="Insert">
+</form>
+<br>
+<a href="index.html">Back to Menu</a>
+</body>
+</html>
+
+FILE3. [delete.html] HTML File
+===========================
+<!DOCTYPE html>
+<html>
+<head><title>Delete Student</title></head>
+<body>
+<h2>Delete Student</h2>
+<form action="DeleteStudent" method="post">
+    ID: <input type="text" name="id"><br>
+    <input type="submit" value="Delete">
+</form>
+<br>
+<a href="index.html">Back to Menu</a>
+</body>
+</html>
+
+FILE4. [update.html] HTML File
+=============================
+<!DOCTYPE html>
+<html>
+<head><title>Update Student</title></head>
+<body>
+    <h2>Update Student</h2>
+    <form action="UpdateStudent" method="post">
+        ID to Update: <input type="text" name="id"><br>
+        New Name: <input type="text" name="name"><br>
+        New City: <input type="text" name="city"><br>
+        <input type="submit" value="Update">
+    </form>
+    <br>
+<a href="index.html">Back to Menu</a>
+</body>
+</html>
+
+FILE5. [display.jsp] JSP File
+=============================
+<%@ page import="java.sql.*" %>
+<html>
+<head><title>All Students</title></head>
+<body>
+<h2>Student Records</h2>
+<table border="1">
+<tr><th>ID</th><th>Name</th><th>City</th></tr>
+<%
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        
+        Connection con = DriverManager.getConnection("jdbc:mysql://128.66.203.247:3306/exam24", "exam24", "sumo@123");
+        //Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/mydb","root", "password");      
+        
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM student");
+
+        while (rs.next()) {
+%>
+<tr>
+    <td><%= rs.getInt("id") %></td>
+    <td><%= rs.getString("name") %></td>
+    <td><%= rs.getString("city") %></td>
+</tr>
+<%
+        }
+        con.close();
+    } catch(Exception e) {
+        out.println("Error: " + e.getMessage());
+    }
+%>
+</table>
+<br>
+<a href="index.html">Back to Menu</a>
+</body>
+</html>
+
+
+FILE6. [InsertStudent.java] Servlet
+=============================
+package com.jm;
+
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		//doGet(request, response);
+		
+        int id = Integer.parseInt(request.getParameter("id"));
+        String name = request.getParameter("name");
+        String city = request.getParameter("city");
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            
+            Connection con = DriverManager.getConnection("jdbc:mysql://128.66.203.247:3306/exam24", "exam24", "sumo@123");
+            //Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/mydb","root", "password");
+            
+            PreparedStatement ps = con.prepareStatement("INSERT INTO student VALUES (?, ?, ?)");
+            ps.setInt(1, id);
+            ps.setString(2, name);
+            ps.setString(3, city);
+
+            int rows = ps.executeUpdate();
+
+            if (rows > 0)
+                response.sendRedirect("success.html");
+            else
+                response.sendRedirect("error.html");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("error.html");
+        }
+    }
+}
+
+FILE7. [DeleteStudent.java] Servlet
+=============================
+package com.jm;
+
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		//doGet(request, response);
+		
+        int id = Integer.parseInt(request.getParameter("id"));
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            Connection con = DriverManager.getConnection("jdbc:mysql://128.66.203.247:3306/exam24", "exam24", "sumo@123");
+            //Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/mydb","root", "password");
+            
+            PreparedStatement ps = con.prepareStatement("DELETE FROM student WHERE id=?");
+            ps.setInt(1, id);
+
+            int rows = ps.executeUpdate();
+
+            if (rows > 0)
+                response.sendRedirect("success.html");
+            else
+                response.sendRedirect("error.html");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("error.html");
+        }
+    }
+}
+
+FILE8. [UpdateStudent.java] Servlet
+=============================
+package com.jm;
+
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		//doGet(request, response);
+		
+        int id = Integer.parseInt(request.getParameter("id"));
+        String name = request.getParameter("name");
+        String city = request.getParameter("city");
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            
+            //Connection con = DriverManager.getConnection("jdbc:mysql://128.66.203.247:3306/exam24", "exam24", "sumo@123");
+            Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/mydb","root", "password");
+
+            PreparedStatement ps = con.prepareStatement("UPDATE student SET name=?, city=? WHERE id=?");
+            ps.setString(1, name);
+            ps.setString(2, city);
+            ps.setInt(3, id);
+
+            int i = ps.executeUpdate();
+            if (i > 0)
+                response.sendRedirect("success.html");
+            else
+                response.sendRedirect("error.html");
+
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("error.html");
+        }
+    }
+}
+
+FILE9. [success.html] HTML File
+===================
+<html>
+<body>
+
+<h2>Operation successful.</h2>
+<a href="index.html">Back to Menu</a>
+
+</body>
+</html>
+
+FILE10. [error.html] HTML File
+===========================
+<html>
+<body>
+
+<h2>Something went wrong!</h2>
+<a href="index.html">Back to Menu</a>
+
+</body>
+</html>
+-------------------------------------------------
+-------------------------------------------------
+FILE11. [displaybyid.html] – Form to input ID
+=================================
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Display Student by ID</title>
+</head>
+<body>
+    <h2>Display Student Record by ID</h2>
+    <form action="DisplayById" method="post">
+        Student ID: <input type="text" name="id">
+        <input type="submit" value="Fetch Record">
+    </form>
+</body>
+</html>
+
+
+FILE12. [DisplayById.java] Servlet
+=============================
+package com.jm;
+
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        int id = Integer.parseInt(request.getParameter("id"));
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            
+            //Connection con = DriverManager.getConnection("jdbc:mysql://128.66.203.247:3306/exam24", "exam24", "sumo@123");
+            Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/mydb","root", "password");
+
+            PreparedStatement pst = con.prepareStatement("SELECT * FROM student WHERE id=?");
+            pst.setInt(1, id);
+            ResultSet rs = pst.executeQuery();
+
+            if (rs.next()) {
+                out.println("<h2>Student Record</h2>");
+                out.println("<p>ID: " + rs.getInt("id") + "</p>");
+                out.println("<p>Name: " + rs.getString("name") + "</p>");
+                out.println("<p>City: " + rs.getString("city") + "</p>");
+            } else {
+                out.println("<h3 style='color:red;'>No record found with ID " + id + "</h3>");
+            }
+
+            con.close();
+        } catch (Exception e) {
+            out.println("<h3 style='color:red;'>Error: " + e.getMessage() + "</h3>");
+            e.printStackTrace(out);
+        }
+    }
+}
+===================
+
+
